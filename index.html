@@ -510,7 +510,8 @@ function lemmatizeWord(w) {
     feet: 'foot',
     teeth: 'tooth',
     mice: 'mouse',
-    people: 'person'
+    people: 'person',
+    mall: "maul"
   };
   if (irregular[w]) return irregular[w];
   if (w.endsWith('ies') && w.length > 3) return w.slice(0, -3) + 'y';
@@ -634,13 +635,16 @@ function startListening() {
   recognition.onresult = (e) => {
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
+      const part = (e.results[i][0].transcript || '').trim();
       if (e.results[i].isFinal) {
-        finalTranscript += e.results[i][0].transcript;
+        if (part) {
+          finalTranscript = finalTranscript ? finalTranscript + ' ' + part : part;
+        }
       } else {
-        interim = e.results[i][0].transcript;
+        interim = part;
       }
     }
-    transcriptBox.textContent = finalTranscript + interim;
+    transcriptBox.textContent = (finalTranscript ? finalTranscript + (interim ? ' ' : '') : '') + interim;
     transcriptBox.classList.remove('placeholder');
   };
 

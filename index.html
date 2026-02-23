@@ -497,10 +497,18 @@ function normalise(s) {
           .trim();
 }
 
+function calculateSimilarity(a, b) {
+  const wordsA = new Set(a.split(/\s+/).filter(w => w.length > 0));
+  const wordsB = new Set(b.split(/\s+/).filter(w => w.length > 0));
+  const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
+  return wordsB.size > 0 ? intersection.size / wordsB.size : 0;
+}
+
 function checkAnswer(spoken, questionObj) {
-  const norm = normalise(spoken);
-  const keywords = questionObj.keywords || [questionObj.answer];
-  return keywords.some(k => norm.includes(normalise(k)));
+  const normSpoken = normalise(spoken);
+  const normAnswer = normalise(questionObj.answer);
+  const sim = calculateSimilarity(normSpoken, normAnswer);
+  return sim >= 0.95;
 }
 
 function submitAnswer(spokenText) {

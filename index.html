@@ -327,6 +327,9 @@
   <button class="btn btn-primary" id="start-btn">Start Quiz</button>
   <button class="btn btn-secondary" id="load-btn">Load custom JSON</button>
   <input type="file" id="file-input" accept=".json" style="display:none" />
+  <label for="shuffle-checkbox" style="display: block; margin-top: 12px; font-size: 0.9rem; color: var(--muted);">
+    <input type="checkbox" id="shuffle-checkbox" checked> Shuffle questions
+  </label>
 </div>
 
 <!-- ── QUIZ SCREEN ── -->
@@ -456,8 +459,8 @@ function shuffle(arr) {
   return a;
 }
 
-function startQuiz(qs) {
-  questions = shuffle(qs);
+function startQuiz(qs, doShuffle = true) {
+  questions = doShuffle ? shuffle(qs) : qs;
   current   = 0;
   score     = 0;
   results   = [];
@@ -677,7 +680,7 @@ startBtn.addEventListener('click', async () => {
     }
     questions = loaded;
   }
-  startQuiz(questions);
+  startQuiz(questions, document.getElementById('shuffle-checkbox').checked);
 });
 
 // ── Custom JSON loader ─────────────────────────────────────────────────────

@@ -501,18 +501,77 @@ function normalise(s) {
           .trim();
 }
 
-function calculateSimilarity(a, b) {
-  const wordsA = new Set(a.split(/\s+/).filter(w => w.length > 0));
-  const wordsB = new Set(b.split(/\s+/).filter(w => w.length > 0));
-  const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
-  return wordsB.size > 0 ? intersection.size / wordsB.size : 0;
+function lemmatizeWord(w) {
+  // small irregulars and simple plural handling
+  const irregular = {
+    men: 'man',
+    women: 'woman',
+    children: 'child',
+    feet: 'foot',
+    teeth: 'tooth',
+    mice: 'mouse',
+    people: 'person'
+  };
+  if (irregular[w]) return irregular[w];
+  if (w.endsWith('ies') && w.length > 3) return w.slice(0, -3) + 'y';
+  if (w.endsWith('ves') && w.length > 3) return w.slice(0, -3) + 'f';
+  if (w.endsWith('s') && w.length > 3) return w.slice(0, -1);
+  return w;
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return dp[m][n];
+}
+
+function wordSimilarity(a, b) {
+  a = lemmatizeWord(a);
+  b = lemmatizeWord(b);
+  if (a === b) return 1;
+  const dist = levenshtein(a, b);
+  const maxLen = Math.max(a.length, b.length);
+  return maxLen === 0 ? 0 : Math.max(0, 1 - dist / maxLen);
+}
+
+function calculateSimilarity(spoken, answer) {
+  const wordsA = spoken.split(/\s+/).filter(w => w.length > 0);
+  const wordsB = answer.split(/\s+/).filter(w => w.length > 0);
+  if (wordsB.length === 0) return 0;
+  let matched = 0;
+  for (const bw of wordsB) {
+    let best = 0;
+    for (const aw of wordsA) {
+      const sim = wordSimilarity(aw, bw);
+      if (sim > best) best = sim;
+      if (best === 1) break;
+    }
+    // consider a word matched if similarity >= 0.85
+    if (best >= 0.85) matched++;
+  }
+  return matched / wordsB.length;
 }
 
 function checkAnswer(spoken, questionObj) {
   const normSpoken = normalise(spoken);
   const normAnswer = normalise(questionObj.answer);
   const sim = calculateSimilarity(normSpoken, normAnswer);
-  return sim >= 0.90;
+  // require 95% of answer words to match (fuzzy)
+  return sim >= 0.95;
 }
 
 function submitAnswer(spokenText) {

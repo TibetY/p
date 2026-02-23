@@ -1,0 +1,42 @@
+[
+  {
+    "question": "What is the capital of France?",
+    "answer": "Paris",
+    "keywords": ["paris"]
+  },
+  {
+    "question": "What is the chemical symbol for water?",
+    "answer": "H2O",
+    "keywords": ["h2o", "h 2 o", "hydrogen oxygen"]
+  },
+  {
+    "question": "How many sides does a hexagon have?",
+    "answer": "Six",
+    "keywords": ["six", "6"]
+  },
+  {
+    "question": "What planet is known as the Red Planet?",
+    "answer": "Mars",
+    "keywords": ["mars"]
+  },
+  {
+    "question": "Who wrote Romeo and Juliet?",
+    "answer": "William Shakespeare",
+    "keywords": ["shakespeare", "william shakespeare"]
+  },
+  {
+    "question": "What is the largest ocean on Earth?",
+    "answer": "The Pacific Ocean",
+    "keywords": ["pacific"]
+  },
+  {
+    "question": "What is the speed of light in a vacuum, approximately?",
+    "answer": "300,000 kilometers per second",
+    "keywords": ["300000", "300,000", "three hundred thousand"]
+  },
+  {
+    "question": "What year did World War Two end?",
+    "answer": "1945",
+    "keywords": ["1945", "nineteen forty five"]
+  }
+]

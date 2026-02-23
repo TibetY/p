@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Speech Quiz</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #23263a;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --radius: 16px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 20px 20px 12px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #progress-bar-wrap {
+      margin-top: 12px;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+    #progress-label {
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* ── Screens ── */
+    .screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      gap: 20px;
+    }
+    .screen.active { display: flex; }
+
+    /* ── Start Screen ── */
+    #start-screen .icon {
+      font-size: 4rem;
+      line-height: 1;
+    }
+    #start-screen h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    #start-screen p {
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      max-width: 320px;
+    }
+
+    /* ── Quiz Screen ── */
+    #question-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+    #question-number {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    #question-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* mic button */
+    #mic-btn {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 2.2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(108,99,255,0.5);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+      flex-shrink: 0;
+    }
+    #mic-btn:active { transform: scale(0.92); }
+    #mic-btn.listening {
+      animation: pulse 1.2s ease-in-out infinite;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      box-shadow: 0 4px 28px rgba(239,68,68,0.6);
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    #mic-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* transcript box */
+    #transcript-box {
+      width: 100%;
+      max-width: 480px;
+      min-height: 60px;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 0.95rem;
+      color: var(--text);
+      text-align: center;
+      line-height: 1.5;
+      transition: all 0.3s;
+      word-break: break-word;
+    }
+    #transcript-box.placeholder { color: var(--muted); font-style: italic; }
+
+    /* result feedback */
+    #result-feedback {
+      width: 100%;
+      max-width: 480px;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    #result-feedback.correct {
+      display: flex;
+      background: rgba(52,211,153,0.12);
+      border: 1px solid rgba(52,211,153,0.3);
+    }
+    #result-feedback.wrong {
+      display: flex;
+      background: rgba(248,113,113,0.12);
+      border: 1px solid rgba(248,113,113,0.3);
+    }
+    #result-feedback .icon { font-size: 1.3rem; flex-shrink: 0; }
+    #result-feedback .correct-ans { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+    #result-feedback strong { color: var(--green); }
+    #result-feedback.wrong strong { color: var(--red); }
+
+    /* ── Result Screen ── */
+    #score-ring {
+      width: 140px;
+      height: 140px;
+      position: relative;
+    }
+    #score-ring svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+    .ring-bg { fill: none; stroke: var(--surface2); stroke-width: 10; }
+    .ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+    #score-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    #score-pct { font-size: 2rem; }
+    #score-fraction { font-size: 0.8rem; color: var(--muted); }
+
+    #result-screen h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    #wrong-list-wrap {
+      width: 100%;
+      max-width: 480px;
+    }
+    #wrong-list-wrap h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    #wrong-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .wrong-item {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 14px 16px;
+      border-left: 3px solid var(--red);
+    }
+    .wrong-item .q { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+    .wrong-item .your-ans { font-size: 0.8rem; color: var(--red); }
+    .wrong-item .correct-ans { font-size: 0.8rem; color: var(--green); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 99px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
+      width: 100%;
+      max-width: 320px;
+    }
+    .btn:active { transform: scale(0.97); opacity: 0.85; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+    }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .btn-next {
+      background: var(--surface2);
+      color: var(--text);
+      display: none;
+      max-width: 480px;
+    }
+    .btn-next.visible { display: inline-flex; }
+
+    /* ── Browser warning ── */
+    #browser-warn {
+      display: none;
+      background: rgba(251,191,36,0.12);
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 0.85rem;
+      color: var(--yellow);
+      text-align: center;
+      max-width: 480px;
+      width: 100%;
+    }
+    #browser-warn.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Speech Quiz</h1>
+  <div id="progress-bar-wrap">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-label"></div>
+</header>
+
+<!-- ── START SCREEN ── -->
+<div id="start-screen" class="screen active">
+  <div class="icon">🎤</div>
+  <h2>Ready to be quizzed?</h2>
+  <p>Speak your answers aloud. The app will check them and give you a final score.</p>
+  <div id="browser-warn">
+    Your browser may not support the Web Speech API. For best results, use
+    <strong>Chrome or Edge on Android</strong>.
+  </div>
+  <button class="btn btn-primary" id="start-btn">Start Quiz</button>
+  <button class="btn btn-secondary" id="load-btn">Load custom JSON</button>
+  <input type="file" id="file-input" accept=".json" style="display:none" />
+</div>
+
+<!-- ── QUIZ SCREEN ── -->
+<div id="quiz-screen" class="screen">
+  <div id="question-card">
+    <div id="question-number"></div>
+    <div id="question-text"></div>
+  </div>
+
+  <button id="mic-btn" aria-label="Hold to speak">🎤</button>
+  <div id="mic-hint">Tap to answer</div>
+
+  <div id="transcript-box" class="placeholder">Your answer will appear here…</div>
+
+  <div id="result-feedback">
+    <span class="icon"></span>
+    <div>
+      <div id="feedback-msg"></div>
+      <div class="correct-ans" id="feedback-correct"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-next" id="next-btn">Next question →</button>
+</div>
+
+<!-- ── RESULT SCREEN ── -->
+<div id="result-screen" class="screen">
+  <div id="score-ring">
+    <svg viewBox="0 0 100 100">
+      <circle class="ring-bg" cx="50" cy="50" r="42" />
+      <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="42"
+              stroke-dasharray="263.9" stroke-dashoffset="263.9" />
+    </svg>
+    <div id="score-label">
+      <span id="score-pct">0%</span>
+      <span id="score-fraction"></span>
+    </div>
+  </div>
+
+  <h2 id="result-heading"></h2>
+
+  <div id="wrong-list-wrap" style="display:none">
+    <h3>Missed questions</h3>
+    <div id="wrong-list"></div>
+  </div>
+
+  <button class="btn btn-primary" id="restart-btn">Try again</button>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let questions = [];
+let current   = 0;
+let score     = 0;
+let results   = [];   // {question, answer, spoken, correct}
+let listening = false;
+let recognition = null;
+
+// ── DOM refs ───────────────────────────────────────────────────────────────
+const startScreen   = document.getElementById('start-screen');
+const quizScreen    = document.getElementById('quiz-screen');
+const resultScreen  = document.getElementById('result-screen');
+const startBtn      = document.getElementById('start-btn');
+const loadBtn       = document.getElementById('load-btn');
+const fileInput     = document.getElementById('file-input');
+const micBtn        = document.getElementById('mic-btn');
+const micHint       = document.getElementById('mic-hint');
+const transcriptBox = document.getElementById('transcript-box');
+const resultFeedback= document.getElementById('result-feedback');
+const feedbackMsg   = document.getElementById('feedback-msg');
+const feedbackCorrect=document.getElementById('feedback-correct');
+const nextBtn       = document.getElementById('next-btn');
+const progressBar   = document.getElementById('progress-bar');
+const progressLabel = document.getElementById('progress-label');
+const browserWarn   = document.getElementById('browser-warn');
+
+// result screen
+const ringFill      = document.getElementById('ring-fill');
+const scorePct      = document.getElementById('score-pct');
+const scoreFraction = document.getElementById('score-fraction');
+const resultHeading = document.getElementById('result-heading');
+const wrongListWrap = document.getElementById('wrong-list-wrap');
+const wrongList     = document.getElementById('wrong-list');
+const restartBtn    = document.getElementById('restart-btn');
+
+// ── Speech API setup ───────────────────────────────────────────────────────
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (!SpeechRecognition) {
+  browserWarn.classList.add('visible');
+}
+
+function buildRecognition() {
+  if (!SpeechRecognition) return null;
+  const r = new SpeechRecognition();
+  r.lang = 'en-US';
+  r.interimResults = true;
+  r.maxAlternatives = 3;
+  r.continuous = false;
+  return r;
+}
+
+// ── Screens ────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  [startScreen, quizScreen, resultScreen].forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Load questions ─────────────────────────────────────────────────────────
+async function loadDefaultQuestions() {
+  try {
+    const res = await fetch('questions.json');
+    if (!res.ok) throw new Error('fetch failed');
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+// ── Quiz logic ─────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz(qs) {
+  questions = shuffle(qs);
+  current   = 0;
+  score     = 0;
+  results   = [];
+  showScreen('quiz-screen');
+  showQuestion();
+}
+
+function updateProgress() {
+  const pct = (current / questions.length) * 100;
+  progressBar.style.width = pct + '%';
+  progressLabel.textContent = `${current} / ${questions.length}`;
+}
+
+function showQuestion() {
+  const q = questions[current];
+  document.getElementById('question-number').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('question-text').textContent   = q.question;
+
+  transcriptBox.textContent = 'Your answer will appear here…';
+  transcriptBox.classList.add('placeholder');
+  resultFeedback.className = 'result-feedback'; // reset
+  resultFeedback.style.display = 'none';
+  nextBtn.classList.remove('visible');
+  micBtn.classList.remove('listening');
+  micHint.textContent = 'Tap to answer';
+  updateProgress();
+}
+
+// ── Scoring ────────────────────────────────────────────────────────────────
+function normalise(s) {
+  return s.toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+}
+
+function checkAnswer(spoken, questionObj) {
+  const norm = normalise(spoken);
+  const keywords = questionObj.keywords || [questionObj.answer];
+  return keywords.some(k => norm.includes(normalise(k)));
+}
+
+function submitAnswer(spokenText) {
+  const q = questions[current];
+  const correct = checkAnswer(spokenText, q);
+
+  if (correct) score++;
+
+  results.push({
+    question: q.question,
+    answer:   q.answer,
+    spoken:   spokenText,
+    correct
+  });
+
+  // show feedback
+  transcriptBox.textContent = spokenText || '(nothing detected)';
+  transcriptBox.classList.remove('placeholder');
+
+  resultFeedback.className = correct ? 'correct' : 'wrong';
+  resultFeedback.querySelector('.icon').textContent = correct ? '✅' : '❌';
+  feedbackMsg.innerHTML = correct
+    ? '<strong>Correct!</strong> Well done.'
+    : `<strong>Incorrect.</strong> You said: "${spokenText || '…'}"`;
+  feedbackCorrect.textContent = correct ? '' : `Correct answer: ${q.answer}`;
+  resultFeedback.style.display = 'flex';
+
+  nextBtn.textContent = current + 1 < questions.length ? 'Next question →' : 'See results';
+  nextBtn.classList.add('visible');
+  updateProgress();
+}
+
+// ── Mic button ─────────────────────────────────────────────────────────────
+micBtn.addEventListener('click', () => {
+  if (nextBtn.classList.contains('visible')) return; // already answered
+
+  if (!SpeechRecognition) {
+    transcriptBox.textContent = 'Speech recognition not supported. Try Chrome on Android.';
+    transcriptBox.classList.remove('placeholder');
+    return;
+  }
+
+  if (listening) {
+    recognition && recognition.stop();
+    return;
+  }
+
+  startListening();
+});
+
+function startListening() {
+  recognition = buildRecognition();
+  let finalTranscript = '';
+  let silenceTimer = null;
+
+  micBtn.classList.add('listening');
+  micHint.textContent = 'Listening… tap to stop';
+  listening = true;
+
+  recognition.onresult = (e) => {
+    clearTimeout(silenceTimer);
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        finalTranscript += e.results[i][0].transcript;
+      } else {
+        interim = e.results[i][0].transcript;
+      }
+    }
+    transcriptBox.textContent = finalTranscript + interim;
+    transcriptBox.classList.remove('placeholder');
+
+    // auto-stop after 1.5s of silence
+    if (finalTranscript) {
+      silenceTimer = setTimeout(() => recognition.stop(), 1500);
+    }
+  };
+
+  recognition.onerror = (e) => {
+    clearTimeout(silenceTimer);
+    stopListening();
+    if (e.error === 'no-speech') {
+      transcriptBox.textContent = '(no speech detected — try again)';
+      transcriptBox.classList.add('placeholder');
+    }
+  };
+
+  recognition.onend = () => {
+    clearTimeout(silenceTimer);
+    stopListening();
+    const spoken = (finalTranscript || transcriptBox.textContent).trim();
+    if (spoken && spoken !== 'Your answer will appear here…' && !spoken.startsWith('(')) {
+      submitAnswer(spoken);
+    }
+  };
+
+  recognition.start();
+}
+
+function stopListening() {
+  listening = false;
+  micBtn.classList.remove('listening');
+  micHint.textContent = 'Tap to answer';
+}
+
+// ── Next / Results ─────────────────────────────────────────────────────────
+nextBtn.addEventListener('click', () => {
+  current++;
+  if (current < questions.length) {
+    showQuestion();
+  } else {
+    showResults();
+  }
+});
+
+function showResults() {
+  const total = questions.length;
+  const pct   = Math.round((score / total) * 100);
+  const circumference = 263.9;
+  const offset = circumference - (circumference * pct / 100);
+
+  // ring color
+  const color = pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
+  ringFill.style.stroke = color;
+
+  // animate after a tick
+  requestAnimationFrame(() => {
+    ringFill.style.strokeDashoffset = offset;
+  });
+
+  scorePct.textContent      = pct + '%';
+  scorePct.style.color      = color;
+  scoreFraction.textContent = `${score} / ${total}`;
+
+  const headings = {
+    high:   '🎉 Excellent work!',
+    mid:    '👍 Not bad!',
+    low:    '📚 Keep practising!'
+  };
+  resultHeading.textContent = pct >= 80 ? headings.high : pct >= 50 ? headings.mid : headings.low;
+
+  // wrong answers list
+  const missed = results.filter(r => !r.correct);
+  if (missed.length > 0) {
+    wrongListWrap.style.display = 'block';
+    wrongList.innerHTML = missed.map(r => `
+      <div class="wrong-item">
+        <div class="q">${r.question}</div>
+        <div class="your-ans">You said: "${r.spoken || '(nothing)'}"</div>
+        <div class="correct-ans">Correct: ${r.answer}</div>
+      </div>
+    `).join('');
+  } else {
+    wrongListWrap.style.display = 'none';
+  }
+
+  progressBar.style.width = '100%';
+  progressLabel.textContent = `${total} / ${total}`;
+  showScreen('result-screen');
+}
+
+// ── Restart ────────────────────────────────────────────────────────────────
+restartBtn.addEventListener('click', () => {
+  progressBar.style.width = '0%';
+  progressLabel.textContent = '';
+  ringFill.style.strokeDashoffset = '263.9';
+  showScreen('start-screen');
+});
+
+// ── Start button ───────────────────────────────────────────────────────────
+startBtn.addEventListener('click', async () => {
+  if (questions.length === 0) {
+    const loaded = await loadDefaultQuestions();
+    if (loaded.length === 0) {
+      alert('Could not load questions.json. Make sure it exists alongside index.html.');
+      return;
+    }
+    questions = loaded;
+  }
+  startQuiz(questions);
+});
+
+// ── Custom JSON loader ─────────────────────────────────────────────────────
+loadBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data) || !data[0]?.question) {
+        throw new Error('Invalid format');
+      }
+      questions = data;
+      loadBtn.textContent = `✓ ${file.name} loaded`;
+      loadBtn.style.color = 'var(--green)';
+    } catch {
+      alert('Invalid JSON. Expected an array of {question, answer, keywords?} objects.');
+    }
+  };
+  reader.readAsText(file);
+});
+</script>
+</body>
+</html>

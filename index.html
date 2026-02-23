@@ -11,8 +11,8 @@
       --bg: #0f1117;
       --surface: #1a1d27;
       --surface2: #23263a;
-      --accent: #6c63ff;
-      --accent2: #a78bfa;
+      --accent: #003366; /* Masonic blue */
+      --accent2: #FFD700; /* Masonic gold */
       --green: #34d399;
       --red: #f87171;
       --yellow: #fbbf24;
@@ -308,7 +308,7 @@
 <body>
 
 <header>
-  <h1>Speech Quiz</h1>
+  <h1>🧱📐 Masonic Speech Quiz 📐🧱</h1>
   <div id="progress-bar-wrap">
     <div id="progress-bar"></div>
   </div>
@@ -317,9 +317,9 @@
 
 <!-- ── START SCREEN ── -->
 <div id="start-screen" class="screen active">
-  <div class="icon">🎤</div>
-  <h2>Ready to be quizzed?</h2>
-  <p>Speak your answers aloud. The app will check them and give you a final score.</p>
+  <div class="icon">🕯️</div>
+  <h2>Ready to seek the light?</h2>
+  <p>Speak your answers aloud in this Masonic ritual quiz. The app will check them and give you a final score.</p>
   <div id="browser-warn">
     Your browser may not support the Web Speech API. For best results, use
     <strong>Chrome or Edge on Android</strong>.
@@ -461,7 +461,7 @@ function shuffle(arr) {
   return a;
 }
 
-function startQuiz(qs, doShuffle = true) {
+function startQuiz(qs, doShuffle = false) {
   questions = doShuffle ? shuffle(qs) : qs;
   current   = 0;
   score     = 0;
@@ -566,7 +566,6 @@ micBtn.addEventListener('click', () => {
 function startListening() {
   recognition = buildRecognition();
   let finalTranscript = '';
-  let silenceTimer = null;
 
   micBtn.classList.add('listening');
   micHint.textContent = 'Listening… tap to stop';
@@ -584,15 +583,9 @@ function startListening() {
     }
     transcriptBox.textContent = finalTranscript + interim;
     transcriptBox.classList.remove('placeholder');
-
-    // auto-stop after 1.5s of silence
-    if (finalTranscript) {
-      silenceTimer = setTimeout(() => recognition.stop(), 1500);
-    }
   };
 
   recognition.onerror = (e) => {
-    clearTimeout(silenceTimer);
     stopListening();
     if (e.error === 'no-speech') {
       transcriptBox.textContent = '(no speech detected — try again)';
@@ -601,7 +594,6 @@ function startListening() {
   };
 
   recognition.onend = () => {
-    clearTimeout(silenceTimer);
     stopListening();
     const spoken = (finalTranscript || transcriptBox.textContent).trim();
     if (spoken && spoken !== 'Your answer will appear here…' && !spoken.startsWith('(')) {

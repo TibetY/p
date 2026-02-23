@@ -353,6 +353,7 @@
   </div>
 
   <button class="btn btn-next" id="next-btn">Next question →</button>
+  <button class="btn btn-secondary" id="retry-btn" style="margin-top: 8px;">Retry question</button>
 </div>
 
 <!-- ── RESULT SCREEN ── -->
@@ -402,6 +403,7 @@ const resultFeedback= document.getElementById('result-feedback');
 const feedbackMsg   = document.getElementById('feedback-msg');
 const feedbackCorrect=document.getElementById('feedback-correct');
 const nextBtn       = document.getElementById('next-btn');
+const retryBtn      = document.getElementById('retry-btn');
 const progressBar   = document.getElementById('progress-bar');
 const progressLabel = document.getElementById('progress-label');
 const browserWarn   = document.getElementById('browser-warn');
@@ -484,6 +486,7 @@ function showQuestion() {
   resultFeedback.className = 'result-feedback'; // reset
   resultFeedback.style.display = 'none';
   nextBtn.classList.remove('visible');
+  retryBtn.classList.remove('visible');
   micBtn.classList.remove('listening');
   micHint.textContent = 'Tap to answer';
   updateProgress();
@@ -538,12 +541,13 @@ function submitAnswer(spokenText) {
 
   nextBtn.textContent = current + 1 < questions.length ? 'Next question →' : 'See results';
   nextBtn.classList.add('visible');
+  retryBtn.classList.add('visible');
   updateProgress();
 }
 
 // ── Mic button ─────────────────────────────────────────────────────────────
 micBtn.addEventListener('click', () => {
-  if (nextBtn.classList.contains('visible')) return; // already answered
+  if (nextBtn.classList.contains('visible') || retryBtn.classList.contains('visible')) return; // already answered
 
   if (!SpeechRecognition) {
     transcriptBox.textContent = 'Speech recognition not supported. Try Chrome on Android.';
@@ -622,6 +626,17 @@ nextBtn.addEventListener('click', () => {
   } else {
     showResults();
   }
+});
+
+retryBtn.addEventListener('click', () => {
+  // reset for retry
+  transcriptBox.textContent = 'Your answer will appear here…';
+  transcriptBox.classList.add('placeholder');
+  resultFeedback.style.display = 'none';
+  nextBtn.classList.remove('visible');
+  retryBtn.classList.remove('visible');
+  micBtn.classList.remove('listening');
+  micHint.textContent = 'Tap to answer';
 });
 
 function showResults() {

@@ -511,7 +511,7 @@ function checkAnswer(spoken, questionObj) {
   const normSpoken = normalise(spoken);
   const normAnswer = normalise(questionObj.answer);
   const sim = calculateSimilarity(normSpoken, normAnswer);
-  return sim >= 0.95;
+  return sim >= 0.90;
 }
 
 function submitAnswer(spokenText) {

@@ -430,7 +430,8 @@ function buildRecognition() {
   r.lang = 'en-US';
   r.interimResults = true;
   r.maxAlternatives = 3;
-  r.continuous = false;
+  // keep recording until user stops it manually
+  r.continuous = true;
   return r;
 }
 
@@ -572,7 +573,6 @@ function startListening() {
   listening = true;
 
   recognition.onresult = (e) => {
-    clearTimeout(silenceTimer);
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) {

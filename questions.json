@@ -41,7 +41,7 @@
   },
   {
     "question": "How come you in possession of these Ss.?",
-    "answer": "From having figurativley represented him when I was raised to the sublime degree of a master mason, worshipful sir.",
+    "answer": "From having figuratively represented him when I was raised to the sublime degree of a master mason, worshipful sir.",
     "keywords": ["represented him", "raised", "sublime degree", "master mason"]
   },
   {
@@ -51,7 +51,12 @@
   },
   {
     "question": "Name and afterwards explain them.",
-    "answer": "1st, hand to hand, 2nd, foot to foot, 3rd, knee to knee, 4th, breast to breast, and 5th, hand on back. 1st - Hand to hand: I greet you as a brother, 2nd - Foot to foot: I will support you in all your lawful undertakings, 3rd - Knee to knee: the posture of my daily supplications shall remind me of your wants and dispose my heart to soothe your afflictions and relieve your neccessities, 4th - Breast to breast:my breast shall be the safe and sacred repository for all your lawful secrets when intrsuted to my keeping, and 5th - Hand on back: I will uphold your good name in your absance as I would in your presence, worshipful sir.",
+    "answer": "1st, hand to hand, 2nd, foot to foot, 3rd, knee to knee, 4th, breast to breast, and 5th, hand on back.",
+    "keywords": ["hand to hand", "foot to foot", "knee to knee", "breast to breast", "hand on back"]
+  },
+  {
+    "question": "Continue...",
+    "answer": "1st - Hand to hand: I greet you as a brother, 2nd - Foot to foot: I will support you in all your lawful undertakings, 3rd - Knee to knee: the posture of my daily supplications shall remind me of your wants and dispose my heart to soothe your afflictions and relieve your neccessities, 4th - Breast to breast:my breast shall be the safe and sacred repository for all your lawful secrets when intrsuted to my keeping, and 5th - Hand on back: I will uphold your good name in your absance as I would in your presence, worshipful sir.",
     "keywords": ["hand to hand", "foot to foot", "knee to knee", "breast to breast", "hand on back", "greet you as a brother", "support you", "lawful undertakings", "posture of my daily supplications", "remind me of your wants", "soothe your afflictions", "relieve your necessities", "safe and sacred repository", "lawful secrets", "uphold your good name"]
   }
 ]

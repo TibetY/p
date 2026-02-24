@@ -511,7 +511,12 @@ function lemmatizeWord(w) {
     teeth: 'tooth',
     mice: 'mouse',
     people: 'person',
-    mall: "maul"
+    mall: "maul",
+    '1st': "first",
+    '2nd': "second",
+    '3rd': "third",
+    '4th': "fourth",
+    '5th': "fifth",
   };
   if (irregular[w]) return irregular[w];
   if (w.endsWith('ies') && w.length > 3) return w.slice(0, -3) + 'y';
